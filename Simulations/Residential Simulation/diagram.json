@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "author": "Smart Water Distribution Project",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-text",
+      "id": "residential_title",
+      "top": -96,
+      "left": 105.6,
+      "attrs": {
+        "text": "ZONE 3 - RESIDENTIAL | MQTT zone: residential | ESP32 + Sensors + Servo Actuator"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "residential_dht_note",
+      "top": -28,
+      "left": -150,
+      "attrs": { "text": "DHT11 (represented by Wokwi DHT22 model)" }
+    },
+    {
+      "type": "board-esp32-devkit-c-v4",
+      "id": "residential_esp",
+      "top": 38,
+      "left": 150,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-dht22",
+      "id": "residential_dht",
+      "top": 2,
+      "left": -110,
+      "attrs": { "temperature": "45.7", "humidity": "50.5" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "residential_dht_pullup",
+      "top": 33.6,
+      "left": 9.05,
+      "rotate": 90,
+      "attrs": { "value": "10000" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "residential_level_note",
+      "top": 144,
+      "left": -115.2,
+      "attrs": { "text": "Water Level - analog signal proxy" }
+    },
+    {
+      "type": "wokwi-slide-potentiometer",
+      "id": "residential_level_proxy",
+      "top": 150,
+      "left": -130,
+      "attrs": { "value": "450", "travelLength": "45" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "residential_flow_note",
+      "top": 297.6,
+      "left": -124.8,
+      "attrs": { "text": "Flow Sensor - analog signal proxy" }
+    },
+    {
+      "type": "wokwi-slide-potentiometer",
+      "id": "residential_flow_proxy",
+      "top": 293,
+      "left": -135.4,
+      "attrs": { "value": "600", "travelLength": "45" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "residential_pump_note",
+      "top": 183,
+      "left": 500,
+      "attrs": { "text": "Servo actuator position proxy (not a real hydraulic pump)" }
+    },
+    {
+      "type": "wokwi-servo",
+      "id": "residential_servo",
+      "top": 78,
+      "left": 650,
+      "attrs": { "horn": "single" }
+    },
+    {
+      "type": "wokwi-slide-potentiometer",
+      "id": "pot1",
+      "top": 293,
+      "left": 306.2,
+      "attrs": { "travelLength": "30" }
+    }
+  ],
+  "connections": [
+    [ "residential_dht:VCC", "residential_esp:3V3", "red", [] ],
+    [ "residential_dht:GND", "residential_esp:GND.1", "black", [] ],
+    [ "residential_dht:SDA", "residential_esp:4", "green", [] ],
+    [ "residential_dht_pullup:1", "residential_esp:3V3", "red", [] ],
+    [ "residential_dht_pullup:2", "residential_dht:SDA", "green", [] ],
+    [ "residential_level_proxy:VCC", "residential_esp:3V3", "red", [] ],
+    [ "residential_level_proxy:GND", "residential_esp:GND.1", "black", [] ],
+    [ "residential_level_proxy:SIG", "residential_esp:34", "blue", [] ],
+    [ "residential_servo:V+", "residential_esp:5V", "red", [] ],
+    [ "residential_servo:GND", "residential_esp:GND.1", "black", [] ],
+    [ "residential_servo:PWM", "residential_esp:26", "orange", [] ],
+    [ "pot1:VCC", "residential_esp:5V", "red", [ "h0" ] ],
+    [ "pot1:GND", "residential_esp:GND.2", "black", [ "v0" ] ],
+    [ "pot1:SIG", "residential_esp:33", "blue", [ "h0" ] ],
+    [ "residential_flow_proxy:VCC", "residential_esp:3V3", "red", [] ],
+    [ "residential_flow_proxy:GND", "residential_esp:GND.1", "black", [] ],
+    [ "residential_flow_proxy:SIG", "residential_esp:33", "blue", [] ]
+  ],
+  "dependencies": {}
+}
