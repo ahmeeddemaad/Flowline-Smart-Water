@@ -1,0 +1,1505 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FLOWLINE | Next-Gen Smart Water Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-dark: #030a12;
+  --panel-bg: rgba(8, 28, 44, 0.78);
+  --panel-border: rgba(45, 95, 122, 0.45);
+  --panel-glow: rgba(54, 224, 192, 0.12);
+  --cyan: #36e0c0;
+  --blue: #23a0d3;
+  --deep-blue: #0e5880;
+  --amber: #ffbe53;
+  --red: #ff5e6c;
+  --text-main: #f0fbff;
+  --text-muted: #8eb0c0;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: radial-gradient(circle at 15% 15%, #08293e 0%, transparent 40%),
+              radial-gradient(circle at 85% 85%, #063d4a 0%, transparent 45%),
+              linear-gradient(135deg, #02080f 0%, #041422 50%, #020a12 100%);
+  color: var(--text-main);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-attachment: fixed;
+}
+
+/* Fluid Background Grid Overlay */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: linear-gradient(rgba(54, 224, 192, 0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(54, 224, 192, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  mask-image: radial-gradient(ellipse at center, black 40%, transparent 90%);
+}
+
+/* Mouse Water Droplets Background Layer */
+.droplet-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.water-particle {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(114, 241, 237, 0.8) 0%, rgba(35, 160, 211, 0.3) 60%, transparent 100%);
+  transform: translate(-50%, -50%) scale(0.4);
+  animation: particleFade 0.6s ease-out forwards;
+  filter: blur(1px);
+  box-shadow: 0 0 14px rgba(54, 224, 192, 0.6);
+}
+
+@keyframes particleFade {
+  0% { opacity: 0.9; transform: translate(-50%, -50%) scale(0.3); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(2.6); }
+}
+
+/* Layout Header */
+.topbar {
+  position: relative;
+  z-index: 10;
+  background: rgba(3, 15, 25, 0.82);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(54, 224, 192, 0.18);
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.5);
+  padding: 18px max(24px, calc((100% - 1280px) / 2));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand { display: flex; align-items: center; gap: 14px; }
+
+.logo-container {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--cyan), var(--blue));
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+  box-shadow: 0 0 25px rgba(54, 224, 192, 0.4);
+}
+
+.brand h1 {
+  font: 800 18px 'Manrope', sans-serif;
+  letter-spacing: 0.5px;
+  background: linear-gradient(90deg, #ffffff, #a2f2ea);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.brand small {
+  display: block;
+  color: var(--text-muted);
+  font-size: 10px;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.status-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--panel-border);
+  background: rgba(8, 30, 46, 0.9);
+  padding: 8px 16px;
+  border-radius: 30px;
+  font-size: 12px;
+  color: #d8e7ed;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.08);
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--amber);
+  box-shadow: 0 0 0 4px rgba(255, 190, 83, 0.2);
+}
+
+.dot.live {
+  background: var(--cyan);
+  box-shadow: 0 0 0 4px rgba(54, 224, 192, 0.25);
+  animation: pulseGlow 1.8s infinite;
+}
+
+@keyframes pulseGlow {
+  0% { box-shadow: 0 0 0 0 rgba(54, 224, 192, 0.5); }
+  70% { box-shadow: 0 0 0 10px rgba(54, 224, 192, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(54, 224, 192, 0); }
+}
+
+.wrap {
+  max-width: 1280px;
+  margin: auto;
+  padding: 28px 24px 48px;
+  position: relative;
+  z-index: 5;
+}
+
+/* Dashboard Intro */
+.intro {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--cyan);
+  text-transform: uppercase;
+}
+
+.intro h2 {
+  font: 800 clamp(24px, 3vw, 34px) 'Manrope', sans-serif;
+  margin: 6px 0 6px;
+  letter-spacing: -0.8px;
+  color: #ffffff;
+}
+
+.intro p {
+  color: var(--text-muted);
+  max-width: 620px;
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+.live-note {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: right;
+  white-space: nowrap;
+  background: rgba(10, 35, 54, 0.5);
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* High-Tech KPI Cards */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 26px;
+}
+
+.kpi {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 18px;
+  padding: 18px;
+  backdrop-filter: blur(14px);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.kpi:hover {
+  transform: translateY(-3px);
+  border-color: rgba(54, 224, 192, 0.5);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 20px var(--panel-glow);
+}
+
+.kpi-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kpi-icon {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: rgba(54, 224, 192, 0.12);
+  color: var(--cyan);
+  font-size: 16px;
+  border: 1px solid rgba(54, 224, 192, 0.2);
+}
+
+.kpi-val {
+  font: 800 28px 'Manrope', sans-serif;
+  margin: 12px 0 4px;
+  color: var(--text-main);
+  letter-spacing: -0.5px;
+}
+
+.kpi-sub { font-size: 11px; color: var(--text-muted); }
+
+/* Zone Cards Grid */
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 28px 0 14px;
+}
+
+.section-head h3 {
+  font: 800 18px 'Manrope', sans-serif;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-head span { font-size: 12px; color: var(--text-muted); }
+
+.zones {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.zone {
+  position: relative;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 22px;
+  overflow: visible;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.zone:hover {
+  transform: translateY(-4px);
+  border-color: rgba(54, 224, 192, 0.6);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 25px rgba(54, 224, 192, 0.15);
+  z-index: 10;
+}
+
+.zone-top {
+  padding: 20px 20px 14px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.zone-title { display: flex; gap: 12px; align-items: center; }
+
+.zone-emoji {
+  width: 46px;
+  height: 46px;
+  border-radius: 15px;
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15);
+}
+
+.farm .zone-emoji { background: linear-gradient(135deg, #114232, #0d2b21); border: 1px solid #1a634c; }
+.res .zone-emoji { background: linear-gradient(135deg, #0f3752, #0a2336); border: 1px solid #18527a; }
+.ind .zone-emoji { background: linear-gradient(135deg, #483419, #2b1f0f); border: 1px solid #6c4e25; }
+
+.zone h4 { margin: 0; font: 800 16px 'Manrope', sans-serif; color: #ffffff; }
+.zone .sub { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+
+.badge {
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 30px;
+  padding: 6px 12px;
+  background: rgba(16, 63, 60, 0.8);
+  color: var(--cyan);
+  border: 1px solid rgba(54, 224, 192, 0.3);
+  white-space: nowrap;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 10px rgba(54, 224, 192, 0.15);
+}
+
+.badge.warn {
+  background: rgba(77, 59, 32, 0.85);
+  color: var(--amber);
+  border-color: rgba(255, 190, 83, 0.4);
+  box-shadow: 0 0 10px rgba(255, 190, 83, 0.2);
+}
+
+.badge.bad {
+  background: rgba(75, 38, 52, 0.85);
+  color: var(--red);
+  border-color: rgba(255, 94, 108, 0.4);
+  box-shadow: 0 0 10px rgba(255, 94, 108, 0.25);
+}
+
+.badge.stale {
+  background: rgba(35, 50, 62, 0.85);
+  color: #a3c1cb;
+  border-color: rgba(163, 193, 203, 0.3);
+}
+
+.zone-body { padding: 18px 20px; }
+
+/* Dynamic 3D Liquid Wave Tank Container */
+.water-visual {
+  height: 105px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #051a27 0%, #08293d 100%);
+  border: 1px solid rgba(35, 160, 211, 0.35);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 16px;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.6);
+}
+
+.water-label {
+  position: absolute;
+  top: 10px;
+  left: 14px;
+  font-size: 10px;
+  color: var(--cyan);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  z-index: 4;
+}
+
+.water-pct {
+  position: absolute;
+  right: 14px;
+  top: 8px;
+  font: 800 24px 'Manrope', sans-serif;
+  color: #ffffff;
+  text-shadow: 0 0 12px rgba(54, 224, 192, 0.6);
+  z-index: 4;
+}
+
+.tank {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 10px;
+  height: 52px;
+  border: 2px solid rgba(89, 169, 191, 0.4);
+  border-top: 0;
+  border-radius: 0 0 12px 12px;
+  overflow: hidden;
+  background: rgba(3, 20, 31, 0.6);
+}
+
+/* Animated Water Liquid Waves */
+.water-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60%;
+  background: linear-gradient(180deg, rgba(114, 241, 237, 0.95) 0%, rgba(18, 159, 199, 0.85) 100%);
+  box-shadow: 0 0 25px rgba(54, 224, 192, 0.5);
+  transition: height 0.4s cubic-bezier(0.1, 0.9, 0.2, 1);
+}
+
+.wave-svg {
+  position: absolute;
+  top: -12px;
+  left: 0;
+  width: 200%;
+  height: 14px;
+  fill: rgba(180, 255, 246, 0.85);
+  animation: waveMove 3s linear infinite;
+}
+
+.wave-svg.second {
+  top: -10px;
+  fill: rgba(54, 224, 192, 0.5);
+  animation: waveMove 2s linear infinite reverse;
+}
+
+@keyframes waveMove {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* Rising Water Bubbles */
+.bubble {
+  position: absolute;
+  bottom: -5px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  animation: floatUp 2.5s infinite ease-in;
+  pointer-events: none;
+}
+
+@keyframes floatUp {
+  0% { transform: translateY(0) scale(0.5); opacity: 0; }
+  50% { opacity: 0.8; }
+  100% { transform: translateY(-50px) scale(1.2); opacity: 0; }
+}
+
+/* Metrics Grid & Mini Sparklines */
+.metric-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.metric {
+  padding: 10px 8px;
+  border: 1px solid rgba(33, 72, 91, 0.6);
+  border-radius: 12px;
+  background: rgba(10, 38, 55, 0.7);
+  position: relative;
+  overflow: hidden;
+}
+
+.metric .m-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.metric strong {
+  display: block;
+  font: 800 15px 'Manrope', sans-serif;
+  margin-top: 4px;
+  color: var(--text-main);
+}
+
+.metric small { font-size: 9px; color: var(--text-muted); }
+
+.sparkline-svg {
+  width: 100%;
+  height: 22px;
+  margin-top: 4px;
+  overflow: visible;
+}
+
+.sparkline-path {
+  fill: none;
+  stroke: var(--cyan);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 4px rgba(54, 224, 192, 0.6));
+}
+
+.sparkline-area {
+  fill: url(#sparkline-grad);
+  opacity: 0.25;
+}
+
+/* Semi-Circular Valve Meter Visualizer */
+.valve-meter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  background: rgba(6, 26, 40, 0.8);
+  border: 1px solid rgba(33, 72, 91, 0.5);
+  border-radius: 12px;
+  padding: 8px 12px;
+}
+
+.valve-meter-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.valve-meter-info span { font-size: 10px; color: var(--text-muted); }
+.valve-meter-info b { font-size: 13px; font-family: 'Manrope', sans-serif; color: var(--cyan); margin-top: 2px; }
+
+.valve-dial {
+  width: 38px;
+  height: 38px;
+  position: relative;
+}
+
+.valve-dial svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.valve-dial circle.bg { fill: none; stroke: rgba(255, 255, 255, 0.1); stroke-width: 4; }
+.valve-dial circle.val {
+  fill: none;
+  stroke: var(--cyan);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 50;
+  transition: stroke-dashoffset 0.5s ease;
+  filter: drop-shadow(0 0 3px var(--cyan));
+}
+
+.zone-foot {
+  border-top: 1px solid rgba(33, 72, 91, 0.5);
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.zone-foot strong { color: var(--text-main); font-weight: 700; }
+.hint { display: flex; align-items: center; gap: 4px; color: var(--cyan); font-weight: 700; }
+
+.tip {
+  position: absolute;
+  display: none;
+  left: 50%;
+  bottom: calc(100% + 10px);
+  transform: translateX(-50%);
+  width: min(320px, 90vw);
+  background: #061c2b;
+  border: 1px solid #2d6072;
+  color: white;
+  padding: 16px;
+  border-radius: 16px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+  z-index: 30;
+  pointer-events: none;
+}
+
+.zone:hover .tip { display: block; }
+.tip:after {
+  content: "";
+  position: absolute;
+  bottom: -7px;
+  left: calc(50% - 7px);
+  border-width: 7px 7px 0;
+  border-style: solid;
+  border-color: #061c2b transparent transparent;
+}
+
+.tip h5 { font: 800 13px 'Manrope', sans-serif; margin: 0 0 10px; color: var(--cyan); }
+.tip-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.tip-grid div { background: rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 8px; }
+.tip-grid small { display: block; color: var(--text-muted); font-size: 10px; }
+.tip-grid b { display: block; font-size: 13px; margin-top: 3px; color: var(--text-main); }
+.tip p { font-size: 11px; line-height: 1.5; color: #c5e0e7; margin: 10px 0 0; }
+
+/* System Flow Lower Section */
+.lower {
+  display: grid;
+  grid-template-columns: 1.2fr .8fr;
+  gap: 18px;
+  margin-top: 22px;
+  position: relative;
+  z-index: 5;
+}
+
+.panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(14px);
+}
+
+.panel h3 { font: 800 16px 'Manrope', sans-serif; margin: 0; color: #ffffff; }
+.panel-sub { font-size: 11px; color: var(--text-muted); margin: 6px 0 18px; }
+
+.flow-line { display: flex; align-items: center; gap: 10px; margin: 16px 0 8px; }
+.flow-node {
+  flex: 1;
+  text-align: center;
+  border: 1px solid rgba(36, 80, 100, 0.6);
+  border-radius: 14px;
+  padding: 14px 8px;
+  background: rgba(10, 43, 60, 0.6);
+  color: #dff8fc;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
+}
+
+.flow-node span { display: block; font-size: 20px; margin-bottom: 6px; }
+.flow-node b { font-size: 11px; }
+.arrow { color: var(--cyan); font-size: 18px; }
+
+.alert-list { display: grid; gap: 10px; }
+.alert {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  background: rgba(10, 43, 59, 0.7);
+  border: 1px solid rgba(35, 74, 92, 0.6);
+  border-radius: 14px;
+  transition: all 0.25s ease;
+}
+
+.alert-ico {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: rgba(74, 57, 33, 0.8);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.alert b { font-size: 12px; display: block; color: var(--text-main); }
+.alert small { display: block; color: var(--text-muted); font-size: 11px; line-height: 1.45; margin-top: 3px; }
+.empty { padding: 22px; text-align: center; color: var(--text-muted); font-size: 12px; }
+
+.settings {
+  margin-top: 20px;
+  background: rgba(8, 38, 56, 0.7);
+  border: 1px dashed rgba(45, 89, 107, 0.6);
+  border-radius: 18px;
+  padding: 14px 18px;
+  position: relative;
+  z-index: 5;
+}
+
+.settings summary { cursor: pointer; font-weight: 700; font-size: 12px; color: var(--cyan); }
+.settings-grid { display: grid; grid-template-columns: 1.5fr .6fr .8fr 1fr 1fr; gap: 10px; margin-top: 14px; }
+.settings input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid rgba(42, 83, 102, 0.6);
+  border-radius: 10px;
+  background: rgba(6, 28, 43, 0.8);
+  color: #e8fbff;
+  font: 12px 'DM Sans', sans-serif;
+  min-width: 0;
+}
+
+.settings label { font-size: 10px; color: var(--text-muted); display: block; margin-bottom: 4px; }
+.btn {
+  border: 0;
+  border-radius: 10px;
+  padding: 11px 16px;
+  background: linear-gradient(135deg, var(--cyan), var(--blue));
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 12px;
+  box-shadow: 0 6px 20px rgba(7, 139, 165, 0.35);
+  transition: opacity 0.2s, transform 0.1s;
+}
+
+.btn:hover { opacity: 0.92; transform: translateY(-1px); }
+.btn.secondary { background: rgba(23, 62, 81, 0.8); color: #bfeef5; box-shadow: none; }
+.settings-actions { display: flex; gap: 10px; margin-top: 12px; align-items: center; }
+.settings-note { font-size: 10px; color: #92b4c1; line-height: 1.5; margin-top: 8px; }
+code { color: var(--cyan); }
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+  color: #8ba0ab;
+  font-size: 11px;
+  border-top: 1px solid rgba(36, 70, 88, 0.6);
+  padding-top: 18px;
+  position: relative;
+  z-index: 5;
+}
+
+@media(max-width: 850px) {
+  .kpis { grid-template-columns: repeat(2, 1fr); }
+  .zones, .lower { grid-template-columns: 1fr; }
+  .intro { align-items: flex-start; flex-direction: column; }
+  .live-note { text-align: left; }
+  .settings-grid { grid-template-columns: 1fr 1fr; }
+  .topbar { padding: 15px 18px; }
+  .wrap { padding: 22px 15px; }
+}
+
+@media(max-width: 440px) {
+  .kpis { gap: 10px; }
+  .kpi { padding: 14px; }
+  .kpi-val { font-size: 22px; }
+  .settings-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="droplet-layer" id="dropletLayer" aria-hidden="true"></div>
+
+<!-- Shared SVG Defs for Mini Sparkline Gradients -->
+<svg style="width:0;height:0;position:absolute;" aria-hidden="true">
+  <defs>
+    <linearGradient id="sparkline-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#36e0c0" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#36e0c0" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<header class="topbar">
+ <div class="brand">
+   <div class="logo-container">💧</div>
+   <div>
+     <h1>FLOWLINE</h1>
+     <small>Smart Water Network</small>
+   </div>
+ </div>
+ <div class="top-right">
+   <div class="status-pill">
+     <span class="dot" id="connDot"></span>
+     <span id="connText">Demo preview · live data disconnected</span>
+   </div>
+ </div>
+</header>
+
+<main class="wrap">
+ <section class="intro">
+  <div>
+    <div class="eyebrow">Water, made understandable</div>
+    <h2>Your water network at a glance.</h2>
+    <p>See how water is shared across the farm, homes and industry. Hover over any zone to learn what is happening—no technical knowledge needed.</p>
+  </div>
+  <div class="live-note">
+    LAST UPDATE <b id="lastUpdate" style="color:var(--cyan)">Just now</b><br>
+    <span id="modeNote">Showing sample values for preview</span>
+  </div>
+ </section>
+
+ <section class="kpis">
+  <div class="kpi">
+    <div class="kpi-label"><span class="kpi-icon">🌐</span> Network health</div>
+    <div class="kpi-val" id="networkHealth">All zones ready</div>
+    <div class="kpi-sub" id="networkSub">3 zones included in this view</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label"><span class="kpi-icon">💧</span> Average water level</div>
+    <div class="kpi-val" id="avgLevel">67%</div>
+    <div class="kpi-sub">Across all monitored zones</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label"><span class="kpi-icon">↗</span> Total flow</div>
+    <div class="kpi-val" id="totalFlow">34 <small style="font:500 12px 'DM Sans'">L/min</small></div>
+    <div class="kpi-sub">Current measured flow</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label"><span class="kpi-icon">🔔</span> Needs attention</div>
+    <div class="kpi-val" id="attentionCount" style="color:var(--cyan)">0</div>
+    <div class="kpi-sub" id="attentionSub">No active warnings in preview</div>
+  </div>
+ </section>
+
+ <div class="section-head">
+   <h3>Choose a zone</h3>
+   <span>Hover over a card for a simple explanation ↗</span>
+ </div>
+
+ <section class="zones" id="zones">
+  <!-- FARM ZONE -->
+  <article class="zone farm" data-zone="farm">
+    <div class="zone-top">
+      <div class="zone-title"><div class="zone-emoji">🌱</div><div><h4>Farm</h4><div class="sub">Growing crops & irrigation</div></div></div>
+      <span class="badge" id="farmBadge">Healthy</span>
+    </div>
+    <div class="zone-body">
+      <div class="water-visual">
+        <div class="water-label">Water available</div>
+        <div class="water-pct" id="farmLevelText">72%</div>
+        <div class="tank">
+          <div class="water-fill" id="farmFill" style="height:72%">
+            <!-- Animated Wave SVG -->
+            <svg class="wave-svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+              <path d="M0,0 C150,90 350,-40 500,40 C650,120 900,10 1200,40 L1200,120 L0,120 Z"></path>
+            </svg>
+            <svg class="wave-svg second" viewBox="0 0 1200 120" preserveAspectRatio="none">
+              <path d="M0,0 C200,60 400,-20 600,50 C800,110 1000,20 1200,60 L1200,120 L0,120 Z"></path>
+            </svg>
+            <!-- Rising Bubbles -->
+            <div class="bubble" style="left:20%; width:6px; height:6px; animation-delay:0s"></div>
+            <div class="bubble" style="left:60%; width:8px; height:8px; animation-delay:1.2s"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="metric-row">
+        <div class="metric">
+          <div class="m-label">🌡 Temp</div>
+          <strong id="farmTemp">26°C</strong>
+          <small>Air temp</small>
+        </div>
+        <div class="metric">
+          <div class="m-label">↗ Flow</div>
+          <strong id="farmFlow">18</strong>
+          <small>L/min</small>
+        </div>
+        <div class="metric">
+          <div class="m-label">🌿 Soil</div>
+          <strong id="farmSoil">48%</strong>
+          <small>Moisture</small>
+        </div>
+      </div>
+
+      <!-- Rotary Valve Angle Visualizer -->
+      <div class="valve-meter">
+        <div class="valve-meter-info">
+          <span>Valve Mode & Angle</span>
+          <b id="farmValveText">AUTO · 45°</b>
+        </div>
+        <div class="valve-dial">
+          <svg viewBox="0 0 36 36">
+            <circle class="bg" cx="18" cy="18" r="14"></circle>
+            <circle class="val" id="farmValveCircle" cx="18" cy="18" r="14"></circle>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Real-time Sparkline SVG -->
+      <svg class="sparkline-svg" id="farmSparkline" viewBox="0 0 100 25">
+        <path class="sparkline-area" d="M0,25 L0,10 L20,12 L40,8 L60,15 L80,9 L100,11 L100,25 Z"></path>
+        <path class="sparkline-path" d="M0,10 L20,12 L40,8 L60,15 L80,9 L100,11"></path>
+      </svg>
+    </div>
+
+    <div class="zone-foot">
+      <span>Zone status</span><strong id="farmStatus">Water flowing normally</strong><span class="hint">Details ⓘ</span>
+    </div>
+    <div class="tip">
+      <h5>🌱 Farm — status breakdown</h5>
+      <div class="tip-grid">
+        <div><small>Water reserve</small><b id="farmTipLevel">72%</b></div>
+        <div><small>Temperature</small><b id="farmTipTemp">26°C</b></div>
+        <div><small>Water flow</small><b id="farmTipFlow">18 L/min</b></div>
+        <div><small>Soil moisture</small><b id="farmTipSoil">48%</b></div>
+      </div>
+      <p id="farmTipText">Water is available for irrigation. Soil moisture helps indicate whether crops need watering.</p>
+    </div>
+  </article>
+
+  <!-- RESIDENTIAL ZONE -->
+  <article class="zone res" data-zone="residential">
+    <div class="zone-top">
+      <div class="zone-title"><div class="zone-emoji">🏘️</div><div><h4>Residential</h4><div class="sub">Homes & daily water use</div></div></div>
+      <span class="badge" id="residentialBadge">Healthy</span>
+    </div>
+    <div class="zone-body">
+      <div class="water-visual">
+        <div class="water-label">Water available</div>
+        <div class="water-pct" id="residentialLevelText">64%</div>
+        <div class="tank">
+          <div class="water-fill" id="residentialFill" style="height:64%">
+            <svg class="wave-svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+              <path d="M0,0 C150,90 350,-40 500,40 C650,120 900,10 1200,40 L1200,120 L0,120 Z"></path>
+            </svg>
+            <svg class="wave-svg second" viewBox="0 0 1200 120" preserveAspectRatio="none">
+              <path d="M0,0 C200,60 400,-20 600,50 C800,110 1000,20 1200,60 L1200,120 L0,120 Z"></path>
+            </svg>
+            <div class="bubble" style="left:30%; width:5px; height:5px; animation-delay:0.5s"></div>
+            <div class="bubble" style="left:75%; width:7px; height:7px; animation-delay:1.5s"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="metric-row">
+        <div class="metric"><div class="m-label">🌡 Temp</div><strong id="residentialTemp">25°C</strong><small>Air temp</small></div>
+        <div class="metric"><div class="m-label">↗ Flow</div><strong id="residentialFlow">9</strong><small>L/min</small></div>
+        <div class="metric"><div class="m-label">🚰 Supply</div><strong id="residentialSupply">On</strong><small>Valve state</small></div>
+      </div>
+
+      <div class="valve-meter">
+        <div class="valve-meter-info">
+          <span>Valve Mode & Angle</span>
+          <b id="residentialValveText">AUTO · 30°</b>
+        </div>
+        <div class="valve-dial">
+          <svg viewBox="0 0 36 36">
+            <circle class="bg" cx="18" cy="18" r="14"></circle>
+            <circle class="val" id="residentialValveCircle" cx="18" cy="18" r="14"></circle>
+          </svg>
+        </div>
+      </div>
+
+      <svg class="sparkline-svg" id="residentialSparkline" viewBox="0 0 100 25">
+        <path class="sparkline-area" d="M0,25 L0,14 L20,10 L40,16 L60,12 L80,15 L100,13 L100,25 Z"></path>
+        <path class="sparkline-path" d="M0,14 L20,10 L40,16 L60,12 L80,15 L100,13"></path>
+      </svg>
+    </div>
+
+    <div class="zone-foot">
+      <span>Zone status</span><strong id="residentialStatus">Supply running normally</strong><span class="hint">Details ⓘ</span>
+    </div>
+    <div class="tip">
+      <h5>🏘️ Residential — status breakdown</h5>
+      <div class="tip-grid">
+        <div><small>Water reserve</small><b id="residentialTipLevel">64%</b></div>
+        <div><small>Temperature</small><b id="residentialTipTemp">25°C</b></div>
+        <div><small>Water flow</small><b id="residentialTipFlow">9 L/min</b></div>
+        <div><small>Supply state</small><b id="residentialTipSupply">On</b></div>
+      </div>
+      <p id="residentialTipText">The residential supply is available and flow is being monitored.</p>
+    </div>
+  </article>
+
+  <!-- INDUSTRIAL ZONE -->
+  <article class="zone ind" data-zone="industrial">
+    <div class="zone-top">
+      <div class="zone-title"><div class="zone-emoji">🏭</div><div><h4>Industrial</h4><div class="sub">Factories & production</div></div></div>
+      <span class="badge" id="industrialBadge">Healthy</span>
+    </div>
+    <div class="zone-body">
+      <div class="water-visual">
+        <div class="water-label">Water available</div>
+        <div class="water-pct" id="industrialLevelText">65%</div>
+        <div class="tank">
+          <div class="water-fill" id="industrialFill" style="height:65%">
+            <svg class="wave-svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+              <path d="M0,0 C150,90 350,-40 500,40 C650,120 900,10 1200,40 L1200,120 L0,120 Z"></path>
+            </svg>
+            <svg class="wave-svg second" viewBox="0 0 1200 120" preserveAspectRatio="none">
+              <path d="M0,0 C200,60 400,-20 600,50 C800,110 1000,20 1200,60 L1200,120 L0,120 Z"></path>
+            </svg>
+            <div class="bubble" style="left:40%; width:6px; height:6px; animation-delay:0.8s"></div>
+            <div class="bubble" style="left:80%; width:8px; height:8px; animation-delay:0.2s"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="metric-row">
+        <div class="metric"><div class="m-label">🌡 Temp</div><strong id="industrialTemp">29°C</strong><small>Air temp</small></div>
+        <div class="metric"><div class="m-label">↗ Flow</div><strong id="industrialFlow">7</strong><small>L/min</small></div>
+        <div class="metric"><div class="m-label">🚰 Supply</div><strong id="industrialSupply">On</strong><small>Valve state</small></div>
+      </div>
+
+      <div class="valve-meter">
+        <div class="valve-meter-info">
+          <span>Valve Mode & Angle</span>
+          <b id="industrialValveText">AUTO · 25°</b>
+        </div>
+        <div class="valve-dial">
+          <svg viewBox="0 0 36 36">
+            <circle class="bg" cx="18" cy="18" r="14"></circle>
+            <circle class="val" id="industrialValveCircle" cx="18" cy="18" r="14"></circle>
+          </svg>
+        </div>
+      </div>
+
+      <svg class="sparkline-svg" id="industrialSparkline" viewBox="0 0 100 25">
+        <path class="sparkline-area" d="M0,25 L0,12 L20,15 L40,11 L60,14 L80,10 L100,12 L100,25 Z"></path>
+        <path class="sparkline-path" d="M0,12 L20,15 L40,11 L60,14 L80,10 L100,12"></path>
+      </svg>
+    </div>
+
+    <div class="zone-foot">
+      <span>Zone status</span><strong id="industrialStatus">Supply running normally</strong><span class="hint">Details ⓘ</span>
+    </div>
+    <div class="tip">
+      <h5>🏭 Industrial — status breakdown</h5>
+      <div class="tip-grid">
+        <div><small>Water reserve</small><b id="industrialTipLevel">65%</b></div>
+        <div><small>Temperature</small><b id="industrialTipTemp">29°C</b></div>
+        <div><small>Water flow</small><b id="industrialTipFlow">7 L/min</b></div>
+        <div><small>Supply state</small><b id="industrialTipSupply">On</b></div>
+      </div>
+      <p id="industrialTipText">The industrial supply is available and flow is being monitored.</p>
+    </div>
+  </article>
+ </section>
+
+ <section class="lower">
+  <div class="panel">
+    <h3>How the network works</h3>
+    <div class="panel-sub">A simple view of how information moves through the system.</div>
+    <div class="flow-line">
+      <div class="flow-node"><span>📡</span><b>ESP32 Sensors</b></div>
+      <div class="arrow">→</div>
+      <div class="flow-node"><span>💧</span><b>HiveMQ Cloud</b></div>
+      <div class="arrow">→</div>
+      <div class="flow-node"><span>🖥️</span><b>Customer View</b></div>
+    </div>
+    <div class="panel-sub" style="margin-bottom:0">Sensors measure conditions continuously. Live MQTT telemetry is delivered straight to this view without polling delays.</div>
+  </div>
+
+  <div class="panel">
+    <h3>Live alerts</h3>
+    <div class="panel-sub">Active warnings update immediately as new sensor messages arrive. Cleared conditions disappear automatically.</div>
+    <div id="alertList" class="alert-list">
+      <div class="empty">No active warnings in preview.</div>
+    </div>
+  </div>
+ </section>
+
+ <details class="settings" open>
+  <summary>Connect live data (HiveMQ Cloud Settings)</summary>
+  <div class="settings-grid">
+   <div><label for="host">HiveMQ Cloud host</label><input id="host" value="e0b93cccb3ea43df8a98877ae1af77ac.s1.eu.hivemq.cloud"></div>
+   <div><label for="port">WebSocket TLS port</label><input id="port" value="8884"></div>
+   <div><label for="path">WebSocket path</label><input id="path" value="/mqtt"></div>
+   <div><label for="username">Username</label><input id="username" placeholder="Enter broker username" autocomplete="off"></div>
+   <div><label for="password">Password</label><input id="password" type="password" placeholder="Enter broker password" autocomplete="new-password"></div>
+  </div>
+  <div class="settings-actions">
+    <button class="btn" id="connectBtn">Connect live data</button>
+    <button class="btn secondary" id="demoBtn">Return to preview</button>
+    <span id="connectMsg" class="settings-note">Uses MQTT over secure WebSockets. Credentials are entered locally in this browser.</span>
+  </div>
+  <div class="settings-note">Subscribed topics: <code>smartwater/farm/sensors</code>, <code>smartwater/residential/sensors</code>, <code>smartwater/industrial/sensors</code>, and <code>smartwater/+/mode</code>.</div>
+ </details>
+
+ <div class="footer">
+   <span>FLOWLINE · Smart Water Distribution & Monitoring</span>
+   <span>Designed for customers, powered by live sensor data</span>
+ </div>
+</main>
+
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+<script>
+const defaults = {
+  farm: { level: 72, temp: 26, flow: 18, soil: 48, mode: "auto", valveAngle: 45, isClosed: false },
+  residential: { level: 64, temp: 25, flow: 9, mode: "auto", valveAngle: 30, isClosed: false },
+  industrial: { level: 65, temp: 29, flow: 7, mode: "auto", valveAngle: 25, isClosed: false }
+};
+
+let zones = JSON.parse(JSON.stringify(defaults));
+let client = null;
+let live = false;
+let lastSeen = {}; 
+let lastMessageAt = 0;
+let renderScheduled = false;
+const STALE_AFTER_MS = 60000;
+
+// Sparkline Data Queues
+const sparklineHistory = {
+  farm: [70, 71, 72, 70, 73, 72, 72],
+  residential: [60, 62, 65, 63, 64, 64, 64],
+  industrial: [68, 67, 66, 65, 65, 66, 65]
+};
+
+const $ = id => document.getElementById(id);
+function n(v, fallback = 0) { const x = Number(v); return Number.isFinite(x) ? x : fallback; }
+function clamp(v, min = 0, max = 100) { return Math.max(min, Math.min(max, v)); }
+
+function scheduleRender() {
+  if (!renderScheduled) {
+    renderScheduled = true;
+    requestAnimationFrame(() => {
+      renderScheduled = false;
+      render();
+    });
+  }
+}
+
+function isZoneStale(k) {
+  if (!live) return false;
+  const last = lastSeen[k];
+  if (!last) return false;
+  return (Date.now() - last) > STALE_AFTER_MS;
+}
+
+function zoneState(k, z, stale) {
+  if (stale) {
+    const elapsedSec = Math.round((Date.now() - (lastSeen[k] || Date.now())) / 1000);
+    return { label: `Syncing (${elapsedSec}s)`, kind: "stale", message: "Waiting for next MQTT transmission from zone sensor." };
+  }
+  if (z.sensorFault === true || z.sensorFault === "true" || (typeof z.sensorFault === "string" && z.sensorFault !== "none" && z.sensorFault.length > 0)) {
+    return { label: "Sensor fault", kind: "bad", message: "A sensor is not reporting valid data. Check hardware & wiring." };
+  }
+  const level = n(z.level, defaults[k].level);
+  const flow = n(z.flow, defaults[k].flow);
+  const temp = n(z.temp, defaults[k].temp);
+  const isClosed = z.isClosed === true || z.isClosed === "true" || String(z.mode || "").toLowerCase() === "closed";
+
+  if (isClosed) {
+    if (flow > 3) return { label: "Check possible leak", kind: "bad", message: "Water flow (>3 L/min) detected while valve is closed!" };
+    return { label: "Supply paused", kind: "warn", message: "Water delivery to this zone is currently paused." };
+  }
+  if (level < 10) return { label: "Critical low water", kind: "bad", message: "Water reserve is below 10%. Refill needed." };
+  if (level < 15) return { label: "Low water level", kind: "warn", message: "Water reserve is running low (<15%)." };
+  if (level > 90) return { label: "High water level", kind: "warn", message: "Water level is above 90%. Tank overflow risk." };
+  if (flow < 2) return { label: "Low flow rate", kind: "warn", message: "Flow rate is below 2 L/min. Check supply or pipe blockage." };
+  if (temp > 40) return { label: "High temperature", kind: "bad", message: "Temperature is above 40°C threshold." };
+  
+  return { 
+    label: "Healthy", 
+    kind: "ok", 
+    message: k === "farm" ? "Water is available for irrigation. Soil moisture normal." : "Supply running normally with steady flow." 
+  };
+}
+
+function getAlerts(k, z, stale) {
+  const out = [];
+  const zoneName = { farm: "Farm", residential: "Residential", industrial: "Industrial" }[k] || k;
+
+  if (stale) {
+    out.push({ k, label: "Delayed packet", message: `Telemetry packet from ${zoneName} taking longer than expected (>60s). Showing last known value.`, kind: "warn" });
+    return out;
+  }
+
+  if (z.activeAlarms && z.activeAlarms !== "none" && z.activeAlarms !== "") {
+    let alarmList = [];
+    if (Array.isArray(z.activeAlarms)) alarmList = z.activeAlarms;
+    else if (typeof z.activeAlarms === "string") alarmList = z.activeAlarms.split(",").map(s => s.trim()).filter(s => s && s !== "none");
+
+    alarmList.forEach(a => {
+      const code = typeof a === "string" ? a : (a.code || a.title || "Active Alarm");
+      const isBad = ["HIGH_TEMPERATURE", "LEAK", "SENSOR_FAULT", "ESP_OFFLINE", "LEVEL_LOW"].includes(code);
+      out.push({
+        k,
+        label: code.replace(/_/g, " "),
+        message: typeof a === "object" ? (a.detail || a.message) : `Active system alarm [${code}] reported for ${zoneName}.`,
+        kind: isBad ? "bad" : "warn"
+      });
+    });
+  }
+
+  const level = n(z.level, defaults[k].level);
+  const flow = n(z.flow, defaults[k].flow);
+  const temp = n(z.temp, defaults[k].temp);
+  const closed = z.isClosed === true || z.isClosed === "true" || String(z.mode || "").toLowerCase() === "closed";
+
+  if (z.sensorFault === true || (typeof z.sensorFault === "string" && z.sensorFault !== "none" && z.sensorFault.length > 0)) {
+    if (!out.some(a => a.label.includes("SENSOR"))) {
+      out.push({ k, label: "Sensor fault", message: `Invalid sensor reading on ${zoneName}: ${z.sensorFault}`, kind: "bad" });
+    }
+  }
+  
+  if (closed && flow > 3) {
+    if (!out.some(a => a.label.includes("LEAK") || a.label.includes("Leak"))) {
+      out.push({ k, label: "Possible leak", message: `Flow of ${flow.toFixed(1)} L/min measured while ${zoneName} valve is closed.`, kind: "bad" });
+    }
+  }
+
+  if (!closed && level < 10) {
+    if (!out.some(a => a.label.includes("LEVEL_LOW") || a.label.includes("low water"))) {
+      out.push({ k, label: "Critically low water", message: `Water level on ${zoneName} dropped to ${Math.round(level)}%.`, kind: "bad" });
+    }
+  } else if (!closed && level > 90) {
+    if (!out.some(a => a.label.includes("LEVEL_HIGH") || a.label.includes("High water"))) {
+      out.push({ k, label: "High water level", message: `Water level on ${zoneName} reached ${Math.round(level)}%.`, kind: "warn" });
+    }
+  }
+
+  if (!closed && flow > 0 && flow < 2) {
+    if (!out.some(a => a.label.includes("FLOW_LOW") || a.label.includes("Low flow"))) {
+      out.push({ k, label: "Low flow rate", message: `Flow rate on ${zoneName} is low (${flow.toFixed(1)} L/min).`, kind: "warn" });
+    }
+  }
+
+  if (temp > 40) {
+    if (!out.some(a => a.label.includes("HIGH_TEMPERATURE") || a.label.includes("temperature"))) {
+      out.push({ k, label: "High temperature", message: `Temperature on ${zoneName} reached ${temp.toFixed(1)}°C.`, kind: "bad" });
+    }
+  }
+
+  return out;
+}
+
+// Draw Inline SVG Sparkline Chart
+function updateSparkline(k, levelVal) {
+  const arr = sparklineHistory[k];
+  if (!arr) return;
+  arr.push(levelVal);
+  if (arr.length > 10) arr.shift();
+
+  const min = Math.min(...arr) - 2;
+  const max = Math.max(...arr) + 2;
+  const range = max - min || 1;
+
+  const points = arr.map((val, idx) => {
+    const x = (idx / (arr.length - 1)) * 100;
+    const y = 22 - ((val - min) / range) * 18;
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  });
+
+  const pathEl = document.querySelector(`#${k}Sparkline .sparkline-path`);
+  const areaEl = document.querySelector(`#${k}Sparkline .sparkline-area`);
+
+  if (pathEl && areaEl) {
+    const dStr = points.map((p, i) => (i === 0 ? `M${p}` : `L${p}`)).join(" ");
+    pathEl.setAttribute("d", dStr);
+    areaEl.setAttribute("d", `${dStr} L100,25 L0,25 Z`);
+  }
+}
+
+function render() {
+  const keys = ["farm", "residential", "industrial"];
+  
+  const zoneInfo = keys.map(k => {
+    const stale = isZoneStale(k);
+    const z = zones[k];
+    const s = zoneState(k, z, stale);
+    return { k, z, stale, s };
+  });
+
+  // Top KPIs
+  const levels = zoneInfo.map(x => n(x.z.level, defaults[x.k].level));
+  const flows = zoneInfo.map(x => n(x.z.flow, defaults[x.k].flow));
+  $("avgLevel").textContent = Math.round(levels.reduce((a, b) => a + b, 0) / levels.length) + "%";
+  $("totalFlow").innerHTML = flows.reduce((a, b) => a + b, 0).toFixed(1).replace(/\.0$/, "") + ' <small style="font:500 12px DM Sans">L/min</small>';
+
+  const allAlerts = zoneInfo.flatMap(x => getAlerts(x.k, x.z, x.stale));
+  const staleCount = zoneInfo.filter(x => x.stale).length;
+  const attentionCount = allAlerts.length;
+
+  $("attentionCount").textContent = attentionCount;
+  $("attentionSub").textContent = staleCount > 0 
+    ? `${staleCount} zone(s) syncing` 
+    : (attentionCount ? `${attentionCount} active warning(s)` : "No active warnings in current readings");
+
+  $("networkHealth").textContent = staleCount > 0 ? "Live sync active" : (attentionCount ? "Needs attention" : "All zones ready");
+  $("networkSub").textContent = staleCount > 0 ? `Showing last known values for ${staleCount} zone(s)` : "3 zones monitored live";
+
+  // Zone Cards Rendering
+  zoneInfo.forEach(({ k, z, s, stale }) => {
+    const level = clamp(n(z.level, defaults[k].level));
+    const temp = n(z.temp, defaults[k].temp);
+    const flow = n(z.flow, defaults[k].flow);
+    const mode = String(z.mode || "auto").toUpperCase();
+    const angle = n(z.valveAngle, defaults[k].valveAngle);
+
+    $(k + "LevelText").textContent = Math.round(level) + "%";
+    $(k + "Fill").style.height = level + "%";
+
+    $(k + "Temp").textContent = temp.toFixed(1).replace(/\.0$/, "") + "°C";
+    $(k + "Flow").textContent = flow.toFixed(1).replace(/\.0$/, "");
+
+    // Rotary Valve Meter Update
+    const valveTextEl = $(k + "ValveText");
+    const valveCircleEl = $(k + "ValveCircle");
+    if (valveTextEl) valveTextEl.textContent = `${mode} · ${angle}°`;
+    if (valveCircleEl) {
+      const strokeOffset = 88 - (angle / 90) * 88;
+      valveCircleEl.style.strokeDashoffset = strokeOffset;
+    }
+
+    const badgeEl = $(k + "Badge");
+    badgeEl.textContent = s.label;
+    badgeEl.className = "badge" + (s.kind === "warn" ? " warn" : s.kind === "bad" ? " bad" : s.kind === "stale" ? " stale" : "");
+
+    $(k + "Status").textContent = s.label;
+
+    $(k + "TipLevel").textContent = Math.round(level) + "%";
+    $(k + "TipTemp").textContent = temp.toFixed(1).replace(/\.0$/, "") + "°C";
+    $(k + "TipFlow").textContent = flow.toFixed(1) + " L/min";
+    $(k + "TipText").textContent = s.message;
+
+    if (k === "farm") {
+      const soil = clamp(n(z.soil, defaults.farm.soil));
+      $("farmSoil").textContent = Math.round(soil) + "%";
+      $("farmTipSoil").textContent = Math.round(soil) + "%";
+    } else {
+      const isClosed = z.isClosed === true || z.isClosed === "true" || String(z.mode || "").toLowerCase() === "closed";
+      const supplyText = isClosed ? "Paused" : "On";
+      if ($(k + "Supply")) $(k + "Supply").textContent = supplyText;
+      if ($(k + "TipSupply")) $(k + "TipSupply").textContent = supplyText;
+    }
+
+    updateSparkline(k, level);
+  });
+
+  // Dynamic Alerts List Panel
+  const listEl = $("alertList");
+  if (allAlerts.length > 0) {
+    listEl.innerHTML = allAlerts.map(a => `
+      <div class="alert">
+        <div class="alert-ico">${a.kind === "bad" ? "⚠️" : "🔎"}</div>
+        <div>
+          <b>${{ farm: "Farm", residential: "Residential", industrial: "Industrial" }[a.k] || a.k}: ${a.label}</b>
+          <small>${a.message}</small>
+        </div>
+      </div>
+    `).join("");
+  } else {
+    listEl.innerHTML = '<div class="empty">No active alerts. Any warning will appear here immediately when thresholds are crossed, and clear when values normalize.</div>';
+  }
+
+  if (lastMessageAt > 0) {
+    $("lastUpdate").textContent = new Date(lastMessageAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  }
+}
+
+function setConnection(isLive, text) {
+  live = isLive;
+  $("connDot").className = "dot" + (isLive ? " live" : "");
+  $("connText").textContent = text;
+  $("modeNote").textContent = isLive ? "Live MQTT WebSockets · Zero Delay" : "Showing sample values for preview";
+  scheduleRender();
+}
+
+function payloadFromMessage(k, p, subTopic) {
+  let obj = p;
+  if (typeof p === "string") {
+    try { obj = JSON.parse(p); } catch (e) { return; }
+  }
+  if (!obj || typeof obj !== "object") return;
+  if (obj.data && typeof obj.data === "object") obj = obj.data;
+  else if (obj.telemetry && typeof obj.telemetry === "object") obj = obj.telemetry;
+
+  const z = { ...zones[k] };
+
+  if (subTopic === "mode") {
+    if (obj.mode !== undefined) z.mode = obj.mode;
+    if (obj.isClosed !== undefined) z.isClosed = obj.isClosed;
+    else z.isClosed = (String(z.mode).toLowerCase() === "closed");
+  } else if (subTopic === "valve") {
+    if (obj.angle !== undefined) z.valveAngle = obj.angle;
+    if (obj.mode !== undefined) {
+      z.mode = obj.mode;
+      z.isClosed = (String(z.mode).toLowerCase() === "closed");
+    }
+  } else {
+    const keysToUpdate = [
+      "temp", "level", "flow", "rain", "soil", "soilMoisture", "soil_moisture", 
+      "humidity", "mode", "isClosed", "valveAngle", "demand", "targetFlow", 
+      "levelBand", "sharePct", "sensorFault", "alarmCount", "activeAlarms"
+    ];
+
+    keysToUpdate.forEach(key => {
+      if (obj[key] !== undefined) {
+        z[key] = obj[key];
+      }
+    });
+
+    if (obj.soilMoisture !== undefined) z.soil = obj.soilMoisture;
+    else if (obj.soil_moisture !== undefined) z.soil = obj.soil_moisture;
+
+    if (obj.isClosed !== undefined) z.isClosed = obj.isClosed;
+    else if (obj.mode !== undefined) z.isClosed = (String(obj.mode).toLowerCase() === "closed");
+  }
+
+  zones[k] = z;
+  const now = Date.now();
+  lastSeen[k] = now;
+  lastMessageAt = now;
+
+  scheduleRender();
+}
+
+function connect() {
+  if (typeof mqtt === "undefined") {
+    $("connectMsg").textContent = "MQTT.js library not loaded. Check internet connection.";
+    return;
+  }
+
+  const host = $("host").value.trim();
+  const port = $("port").value.trim();
+  const path = $("path").value.trim() || "/mqtt";
+  const username = $("username").value.trim();
+  const password = $("password").value;
+
+  if (!host || !port || !username || !password) {
+    $("connectMsg").textContent = "Please enter HiveMQ WebSocket host, port, username, and password.";
+    return;
+  }
+
+  if (client) {
+    try { client.end(true); } catch (e) {}
+    client = null;
+  }
+
+  const url = "wss://" + host + ":" + port + path;
+  $("connectMsg").textContent = "Connecting to " + url + " ...";
+
+  client = mqtt.connect(url, {
+    username,
+    password,
+    clientId: "flowline_dash_" + Math.random().toString(16).slice(2, 10),
+    clean: true,
+    keepalive: 30,
+    connectTimeout: 10000,
+    reconnectPeriod: 2000,
+    resubscribe: true,
+    protocolVersion: 4
+  });
+
+  client.on("connect", () => {
+    setConnection(true, "Live MQTT Connected");
+    $("connectMsg").textContent = "Connected. Subscribing to zone topics...";
+
+    const topics = [
+      "smartwater/farm/sensors",
+      "smartwater/residential/sensors",
+      "smartwater/industrial/sensors",
+      "smartwater/+/mode",
+      "smartwater/+/valve"
+    ];
+
+    client.subscribe(topics, { qos: 0 }, (err) => {
+      if (err) {
+        $("connectMsg").textContent = "Connected, but subscription failed: " + err.message;
+      } else {
+        $("connectMsg").textContent = "Subscribed to sensor topics. Monitoring telemetry...";
+      }
+    });
+  });
+
+  client.on("message", (topic, message) => {
+    const parts = topic.split("/");
+    if (parts[0] === "smartwater") {
+      const zKey = parts[1];
+      if (["farm", "residential", "industrial"].includes(zKey)) {
+        payloadFromMessage(zKey, message.toString(), parts[2]);
+        $("connectMsg").textContent = `Live update received on ${topic} at ${new Date().toLocaleTimeString()}`;
+      }
+    }
+  });
+
+  client.on("error", e => {
+    $("connectMsg").textContent = "Connection error: " + e.message;
+    setConnection(false, "Connection Error");
+  });
+
+  client.on("close", () => {
+    if (live) setConnection(false, "Broker Disconnected");
+  });
+
+  client.on("reconnect", () => {
+    $("connectMsg").textContent = "Reconnecting to HiveMQ broker...";
+  });
+}
+
+$("connectBtn").addEventListener("click", connect);
+$("demoBtn").addEventListener("click", () => {
+  if (client) { try { client.end(true); } catch (e) {} client = null; }
+  zones = JSON.parse(JSON.stringify(defaults));
+  lastSeen = {};
+  lastMessageAt = 0;
+  setConnection(false, "Demo preview · live data disconnected");
+  $("connectMsg").textContent = "Preview mode restored.";
+  scheduleRender();
+});
+
+scheduleRender();
+
+// Particle Pointer Effect
+(function(){
+  const layer = $("dropletLayer");
+  let last = 0;
+  document.addEventListener("pointermove", e => {
+    const now = performance.now();
+    if (now - last < 45) return;
+    last = now;
+    const p = document.createElement("div");
+    p.className = "water-particle";
+    p.style.left = e.clientX + "px";
+    p.style.top = e.clientY + "px";
+    layer.appendChild(p);
+    setTimeout(() => p.remove(), 600);
+  }, { passive: true });
+})();
+
+setInterval(() => {
+  if (live) scheduleRender();
+}, 250);
+</script>
+</body>
+</html>
