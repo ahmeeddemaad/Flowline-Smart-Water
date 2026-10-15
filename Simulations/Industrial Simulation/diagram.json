@@ -1,0 +1,135 @@
+{
+  "version": 1,
+  "author": "Smart Water Distribution Project",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-text",
+      "id": "industrial_title",
+      "top": -75,
+      "left": -170,
+      "attrs": { "text": "ZONE 2 - FACTORY | MQTT zone: industrial | ESP32 + Sensors + Servo Actuator" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "industrial_dht_note",
+      "top": -28,
+      "left": -150,
+      "attrs": { "text": "DHT11 (represented by Wokwi DHT22 model)" }
+    },
+    {
+      "type": "board-esp32-devkit-c-v4",
+      "id": "industrial_esp",
+      "top": 38,
+      "left": 150,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-dht22",
+      "id": "industrial_dht",
+      "top": 2,
+      "left": -110,
+      "attrs": { "temperature": "9.3", "humidity": "57.5" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "industrial_dht_pullup",
+      "top": 4,
+      "left": 14,
+      "rotate": 90,
+      "attrs": { "value": "10000" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "industrial_level_note",
+      "top": 124,
+      "left": -178,
+      "attrs": { "text": "Water Level - analog signal proxy" }
+    },
+    {
+      "type": "wokwi-slide-potentiometer",
+      "id": "industrial_level_proxy",
+      "top": 150,
+      "left": -130,
+      "attrs": { "value": "550", "travelLength": "45" }
+    },
+
+{
+  "type": "wokwi-text",
+  "id": "industrial_flow_note",
+  "top": 230,
+  "left": -178,
+  "attrs": {
+    "text": "Flow Sensor - analog signal proxy"
+  }
+},
+{
+  "type": "wokwi-slide-potentiometer",
+  "id": "industrial_flow_proxy",
+  "top": 255,
+  "left": -130,
+  "attrs": {
+    "value": "600",
+    "travelLength": "45"
+  }
+},
+    {
+      "type": "wokwi-text",
+      "id": "industrial_pump_note",
+      "top": 183,
+      "left": 500,
+      "attrs": { "text": "Servo actuator position proxy (not a real hydraulic pump)" }
+    },
+    {
+      "type": "wokwi-servo",
+      "id": "industrial_servo",
+      "top": 78,
+      "left": 650,
+      "attrs": { "horn": "single" }
+    },
+    {
+      "type": "wokwi-slide-potentiometer",
+      "id": "pot1",
+      "top": 293,
+      "left": 152.6,
+      "attrs": { "travelLength": "30" }
+    }
+  ],
+  "connections": [
+    [ "industrial_dht:VCC", "industrial_esp:3V3", "red", [] ],
+    [ "industrial_dht:GND", "industrial_esp:GND.1", "black", [] ],
+    [ "industrial_dht:SDA", "industrial_esp:4", "green", [] ],
+    [ "industrial_dht_pullup:1", "industrial_esp:3V3", "red", [] ],
+    [ "industrial_dht_pullup:2", "industrial_dht:SDA", "green", [] ],
+    [ "industrial_level_proxy:VCC", "industrial_esp:3V3", "red", [] ],
+    [ "industrial_level_proxy:GND", "industrial_esp:GND.1", "black", [] ],
+    [ "industrial_level_proxy:SIG", "industrial_esp:34", "blue", [] ],
+    [ "industrial_servo:V+", "industrial_esp:5V", "red", [] ],
+    [ "industrial_servo:GND", "industrial_esp:GND.1", "black", [] ],
+    [ "industrial_servo:PWM", "industrial_esp:26", "orange", [] ],
+    [ "industrial_esp:GND.2", "pot1:GND", "black", [ "v0.4", "h94.84" ] ],
+    [ "pot1:VCC", "industrial_esp:5V", "red", [ "h0" ] ],
+    [ "pot1:SIG", "industrial_esp:33", "blue", [ "h0" ] ],
+
+[
+  "industrial_flow_proxy:VCC",
+  "industrial_esp:3V3",
+  "red",
+  []
+],
+[
+  "industrial_flow_proxy:GND",
+  "industrial_esp:GND.1",
+  "black",
+  []
+],
+[
+  "industrial_flow_proxy:SIG",
+  "industrial_esp:33",
+  "blue",
+  []
+]
+
+  ],
+  "dependencies": {}
+}
